@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Studio Webux @ 2022
 
 source config.sh
