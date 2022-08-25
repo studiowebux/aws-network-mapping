@@ -112,6 +112,71 @@ fetchSecurityGroups(){
 }
 
 
+fetchNatGateways(){
+    json=$1
+    accountId=$2
+    region=$3
+
+    response=$(aws ec2 describe-nat-gateways \
+        --query "NatGateways[].{NatGatewayAddresses: NatGatewayAddresses[0].{NetworkInterfaceId: NetworkInterfaceId, PrivateIp: PrivateIp, PublicIp: PublicIp}, NatGatewayId: NatGatewayId, State: State, SubnetId: SubnetId, VpcId: VpcId}" \
+        | jq '.')
+
+    for item in $(echo $response | jq -r '.[] | @base64'); do
+        _jq() {
+            echo ${item} | base64 --decode | jq -r ${1}
+        }
+        json=$(echo $json | jq -r --arg ACCOUNTID "$accountId" --arg REGION "$region" --argjson RESPONSE "$(echo $(_jq '.'))" \
+            '.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)]
+            .regions[.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)].regions|map(.id == $REGION) | index(true)]
+            .nat_gateway += [$RESPONSE]')
+    done
+    echo $json
+}
+
+fetchTransitGateways(){
+    json=$1
+    accountId=$2
+    region=$3
+
+    response=$(aws ec2 describe-transit-gateways \
+        --query "TransitGateways[].{TransitGatewayId: TransitGatewayId, TransitGatewayArn: TransitGatewayArn, State: State, OwnerId: OwnerId, Description: Description, AmazonSideAsn: Options.AmazonSideAsn, AssociationDefaultRouteTableId: Options.AssociationDefaultRouteTableId, PropagationDefaultRouteTableId: Options.PropagationDefaultRouteTableId, DnsSupport: Options.DnsSupport}" \
+        | jq '.')
+
+    for item in $(echo $response | jq -r '.[] | @base64'); do
+        _jq() {
+            echo ${item} | base64 --decode | jq -r ${1}
+        }
+        json=$(echo $json | jq -r --arg ACCOUNTID "$accountId" --arg REGION "$region" --argjson RESPONSE "$(echo $(_jq '.'))" \
+            '.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)]
+            .regions[.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)].regions|map(.id == $REGION) | index(true)]
+            .transit_gateway += [$RESPONSE]')
+    done
+    echo $json
+}
+
+
+fetchTransitGatewayRouteTables(){
+    json=$1
+    accountId=$2
+    region=$3
+
+    response=$(aws ec2 describe-transit-gateway-route-tables \
+        --query "TransitGatewayRouteTables[].{TransitGatewayId: TransitGatewayId, TransitGatewayRouteTableId: TransitGatewayRouteTableId, State: State}" \
+        | jq '.')
+
+    for item in $(echo $response | jq -r '.[] | @base64'); do
+        _jq() {
+            echo ${item} | base64 --decode | jq -r ${1}
+        }
+        json=$(echo $json | jq -r --arg ACCOUNTID "$accountId" --arg REGION "$region" --argjson RESPONSE "$(echo $(_jq '.'))" \
+            '.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)]
+            .regions[.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)].regions|map(.id == $REGION) | index(true)]
+            .transit_gateway_route_table += [$RESPONSE]')
+    done
+    echo $json
+}
+
+
 for profile in "${profiles[@]}"; do
     echo "$profile"
     export AWS_PROFILE="$profile"
@@ -121,23 +186,31 @@ for profile in "${profiles[@]}"; do
     for region in "${regions[@]}"; do
         echo ">$region"
         export AWS_REGION="$region"
-        json=$(echo $json | jq -r --arg ACCOUNTID "$accountId" --arg REGION "$region" '.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)].regions += [{"id": $REGION, "route_tables": [], "vpc": [], "subnet": [], "internet_gateway": [], "security_group": []}]')
+        json=$(echo $json | jq -r --arg ACCOUNTID "$accountId" --arg REGION "$region" '.accounts[.accounts|map(.id == $ACCOUNTID) | index(true)].regions += [{"id": $REGION, "route_tables": [], "vpc": [], "subnet": [], "internet_gateway": [], "security_group": [], "nat_gateway": []}]')
+        echo "Fetch Vpcs"
         json="$(fetchVpcs "$json" "$accountId" "$region")"
+        echo "Fetch Subnets"
         json="$(fetchSubnets "$json" "$accountId" "$region")"
+        echo "Fetch Internet Gateways"
         json="$(fetchInternetGateways "$json" "$accountId" "$region")"
+        echo "Fetch Route Tables"
         json="$(fetchRouteTables "$json" "$accountId" "$region")"
+        echo "Fetch Security Groups"
         json="$(fetchSecurityGroups "$json" "$accountId" "$region")"
+        echo "Fetch Nat Gateways"
+        json="$(fetchNatGateways "$json" "$accountId" "$region")"
+        echo "Fetch Transit Gateways"
+        json="$(fetchTransitGateways "$json" "$accountId" "$region")"
+        echo "Fetch Transit Gateway Route Tables"
+        json="$(fetchTransitGatewayRouteTables "$json" "$accountId" "$region")"
     done
 done
 
 echo $json | jq '.' > network.json
 
 # I'm too poor to have these on my personal account :/
-# aws ec2 describe-nat-gateways
 # aws ec2 describe-transit-gateway-attachments
 # aws ec2 describe-transit-gateway-peering-attachments
-# aws ec2 describe-transit-gateway-route-tables
 # aws ec2 describe-transit-gateway-vpc-attachments
-# aws ec2 describe-transit-gateways
 # aws ec2 describe-network-interfaces
 # aws ec2 describe-client-vpn-routes
