@@ -98,16 +98,22 @@ data.accounts.forEach((account) => {
       yv = PADDING;
     region.vpc.forEach((vpc) => {
       content += `
-        <mxCell id="account_${account.id}_${region.id.replace(
+      <UserObject label="${vpc.VpcId}" tooltip="CIDR: ${
+        vpc.CidrBlock
+      }"  id="account_${account.id}_${region.id.replace(
         /-/g,
         "_"
-      )}_${vpc.VpcId.replace(/-/g, "_")}" value="VPC ${
-        vpc.VpcId
-      }" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=16;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc;strokeColor=#248814;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#AAB7B8;dashed=0;shadow=0;strokeWidth=3;"
+      )}_${vpc.VpcId.replace(/-/g, "_")}">
+      
+      <mxCell 
+      style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=16;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc;strokeColor=#248814;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#AAB7B8;dashed=0;shadow=0;strokeWidth=3;"
         vertex="1" 
         parent="account_${account.id}_${region.id.replace(/-/g, "_")}">
           <mxGeometry x="${xv}" y="${yv}" width="${VPC_WIDTH}" height="${vpcHeight}" as="geometry" />
-        </mxCell>`;
+        </mxCell>
+
+        </UserObject>
+        `;
 
       yv += vpcHeight + PADDING;
 
@@ -152,8 +158,8 @@ data.accounts.forEach((account) => {
         )}_${vpc.VpcId.replace(/-/g, "_")}_${subnet.SubnetId.replace(
           /-/g,
           "_"
-        )}" value="Subnet ${subnet.SubnetId}"
-        style="fillColor=none;strokeColor=#5A6C86;dashed=1;verticalAlign=top;fontStyle=0;fontColor=#5A6C86;shadow=0;strokeWidth=3;fontSize=10;" 
+        )}" value="${subnet.SubnetId}"
+        style="fillColor=none;strokeColor=#5A6C86;dashed=1;verticalAlign=top;fontStyle=0;fontColor=#5A6C86;shadow=0;strokeWidth=3;fontSize=14;" 
         vertex="1" 
         parent="account_${account.id}_${region.id.replace(
           /-/g,
