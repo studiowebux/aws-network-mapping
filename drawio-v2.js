@@ -1,3 +1,6 @@
+// Studio webux @ 2022
+// draw.io integration
+
 const { link } = require("./drawio/arrow");
 const { header, footer } = require("./drawio/header");
 const { generateIgw } = require("./drawio/igw");
@@ -106,7 +109,7 @@ data.accounts.forEach((account) => {
         )}_${igw.InternetGatewayId.replace(/-/g, "_")}`
       );
     });
-    
+
     // TODO: NAT
 
     // TODO: TGW

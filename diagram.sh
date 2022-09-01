@@ -2,6 +2,8 @@
 
 # Studio Webux @ 2022
 
+# tryeraser implementation tryeraser.com
+
 echo "" > diagram.txt
 
 accountId(){

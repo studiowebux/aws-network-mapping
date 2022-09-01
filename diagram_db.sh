@@ -2,6 +2,8 @@
 
 # Studio Webux @ 2022
 
+# https://dbdiagram.io/ integration
+
 echo "" > diagram.txt
 
 accountId(){

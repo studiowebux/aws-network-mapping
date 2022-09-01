@@ -1,3 +1,5 @@
+// Studio webux @ 2022
+
 module.exports = {
   generateIgw: ({
     title,
